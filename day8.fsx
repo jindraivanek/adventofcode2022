@@ -3,8 +3,8 @@ let n = Array.length lines
 let grid = Array2D.init n n (fun i j -> lines[i][j] |> string |> int)
 
 let directionsToEdge x y grid =
-    [ seq { 0 .. x - 1 } |> Seq.map (fun i -> Array2D.get grid i y)
-      seq { 0 .. y - 1 } |> Seq.map (fun j -> Array2D.get grid x j)
+    [ seq { x - 1 .. -1 .. 0 } |> Seq.map (fun i -> Array2D.get grid i y)
+      seq { y - 1 .. -1 .. 0 } |> Seq.map (fun j -> Array2D.get grid x j)
       seq { x + 1 .. n - 1 } |> Seq.map (fun i -> Array2D.get grid i y)
       seq { y + 1 .. n - 1 } |> Seq.map (fun j -> Array2D.get grid x j) ]
 
@@ -20,10 +20,12 @@ let isVisible x y grid =
 let scenicScore x y grid =
     grid
     |> mapDirections x y (fun k xs ->
-        if Seq.isEmpty xs then
-            0
-        else
-            xs |> Seq.takeWhile (fun x -> x < k) |> Seq.length |> (+) 1)
+        let l = Seq.length xs
+
+        match Seq.tryFindIndex (fun x -> x >= k) xs with
+        | _ when l = 0 -> 0
+        | None -> l
+        | Some i -> i + 1)
     |> List.reduce (*)
 
 let part1 =
