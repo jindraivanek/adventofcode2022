@@ -1,7 +1,8 @@
-let lines = System.IO.File.ReadAllLines("day12.test")
+#time
+let lines = System.IO.File.ReadAllLines("day12.input")
 let n = Array.length lines
-printfn "%A" lines
-let grid = Array2D.init n n (fun i j -> lines[i][j])
+let m = String.length lines[0]
+let grid = Array2D.init n m (fun i j -> lines[i][j])
 
 module Array2D =
     let indexedValues arr =
@@ -33,21 +34,38 @@ let startNode grid =
         | _ -> false)
         grid
 
+let startNodes grid =
+    Array2D.indexedValues grid
+    |> Seq.filter (
+        snd
+        >> (function
+        | 'S'
+        | 'a' -> true
+        | _ -> false)
+    )
+    |> Seq.map fst
+    |> Seq.toList
+
+
 let isEndNode grid (x, y) =
     match Array2D.get grid x y with
     | 'E' -> true
     | _ -> false
 
-let dijsktra (initNode: 'n) (neighF: 'n -> 'n list) (finishCond: 'n -> bool) =
+let dijsktra (initNodes: 'n list) (neighF: 'n -> 'n list) (finishCond: 'n -> bool) =
     let pq = System.Collections.Generic.PriorityQueue<'n, int>()
     let visited = System.Collections.Generic.HashSet<'n>()
 
     let dequeue () =
         let (success, node, p) = pq.TryDequeue()
-        printfn "%A" (node, p, elevation node grid)
-        if success then Some(node, p) else None
 
-    pq.Enqueue(initNode, 0)
+        if success then
+            //printfn "%A" (node, p, elevation node grid)
+            Some(node, p)
+        else
+            None
+
+    initNodes |> Seq.iter (fun n -> pq.Enqueue(n, 0))
 
     let rec step () =
         match dequeue () with
@@ -61,10 +79,10 @@ let dijsktra (initNode: 'n) (neighF: 'n -> 'n list) (finishCond: 'n -> bool) =
 
     step ()
 
-let part1 = dijsktra (startNode grid) (neigh grid) (isEndNode grid)
+let part1 = dijsktra [ startNode grid ] (neigh grid) (isEndNode grid)
 
 printfn $"PART1: {part1}"
 
-let part2 = 0
+let part2 = dijsktra (startNodes grid) (neigh grid) (isEndNode grid)
 
 printfn $"PART2: {part2}"
