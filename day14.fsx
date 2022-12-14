@@ -1,4 +1,5 @@
-let lines = System.IO.File.ReadAllLines("day14.test")
+#time
+let lines = System.IO.File.ReadAllLines("day14.input")
 
 let wallPaths =
     lines
@@ -23,7 +24,7 @@ let walls =
 let posPlus (a, b) (c, d) = a + c, b + d
 let posMinus (a, b) (c, d) = a - c, b - d
 
-let fallDirs = [ 0, 1; 1, 1; -1, 1 ]
+let fallDirs = [ 0, 1; -1, 1; 1, 1 ]
 
 type Block =
     | Wall
@@ -34,23 +35,36 @@ let spawnSand = 500, 0
 
 let maxWallY = walls |> Seq.map snd |> Seq.max
 
-let simStep (sand, cave) =
-    match
-        fallDirs
-        |> Seq.map (posPlus sand)
-        |> Seq.tryFind (fun pos -> Map.containsKey pos cave |> not)
-    with
-    | None -> Some(spawnSand, cave |> Map.add sand Sand)
-    | Some((_, y) as pos) -> if y >= maxWallY then None else Some(pos, cave)
+let simStep stopCondition (sand, cave) =
+    if stopCondition (sand, cave) then
+        None
+    else
+        match
+            fallDirs
+            |> Seq.map (posPlus sand)
+            |> Seq.tryFind (fun pos -> Map.containsKey pos cave |> not)
+        with
+        | None -> Some(spawnSand, cave |> Map.add sand Sand)
+        | Some(_, y) when y = maxWallY + 2 -> Some(spawnSand, cave |> Map.add sand Sand)
+        | Some pos -> Some(pos, cave)
 
-let caveSim =
+let caveSim initCave stopCondition =
     (spawnSand, initCave)
-    |> Seq.unfold (fun s -> simStep s |> Option.map (fun x -> x, x))
+    |> Seq.unfold (fun s -> simStep stopCondition s |> Option.map (fun x -> x, x))
 
-let finalCave = Seq.last caveSim |> snd
+let finalCave initCave stopCondition =
+    Seq.last (caveSim initCave stopCondition) |> snd
 
-let part1 = finalCave |> Map.filter (fun _ b -> b = Sand) |> Map.count
+let part1 =
+    finalCave initCave (fun ((_, y), _) -> y >= maxWallY)
+    |> Map.filter (fun _ b -> b = Sand)
+    |> Map.count
+
 printfn $"PART1: {part1}"
 
-let part2 = 0
+let part2 =
+    finalCave initCave (fun (_, cave) -> Map.containsKey spawnSand cave)
+    |> Map.filter (fun _ b -> b = Sand)
+    |> Map.count
+
 printfn $"PART2: {part2}"
