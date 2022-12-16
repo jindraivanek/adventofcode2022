@@ -52,7 +52,7 @@ let dijsktra (initNodes: ('n * int) list) (neighF: 'n -> ('n * int) list) (finis
         let (success, node, p) = pq.TryDequeue()
 
         if success then
-            //printfn "%A" (node, p)
+            //if visited.Count % 1000 = 0 then printfn "%A" (node, p)
             Some(node, p)
         else
             None
@@ -93,9 +93,10 @@ type Node =
       OpenedValves: Label Set }
 
 let neighF n =
-    n.Agents
-    |> Map.toSeq
-    |> Seq.collect (fun (agentId, a) ->
+    // n.Agents
+    // |> Map.toSeq
+    // |> Seq.collect (fun (agentId, a) ->
+        let (agentId, a) = n.Agents |> Map.toSeq |> Seq.maxBy (fun (_, a) -> a.Steps)
         let pos = a.Pos
         let steps = a.Steps
 
@@ -116,8 +117,10 @@ let neighF n =
         let endMove =
             { n with Agents = Map.add agentId { a with Steps = 0 } n.Agents }, steps * maxFlow * totalSteps
 
-        endMove :: moves)
-    |> Seq.toList
+        endMove :: moves
+        //)
+        |> Seq.toList
+        //|> List.maxBy (fun (n, _) -> n.Score) |> List.singleton
 
 let part1 =
     let initState =
