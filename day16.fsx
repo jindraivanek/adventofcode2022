@@ -51,14 +51,14 @@ let dijsktra (initNodes: ('n * int) list) (neighF: 'n -> ('n * int) list) (finis
 let totalSteps = 30
 let maxFlow = valves |> Map.values |> Seq.map (fun v -> v.Flow) |> Seq.max |> fun x -> x * valves.Count
 
-type Node = { Steps : int; Score : int; Pos : Label; OpenedValves : Label list }
-let initState = { Steps = totalSteps; Score = 0; Pos = Label "AA"; OpenedValves = [] }
+type Node = { Steps : int; Score : int; Pos : Label; OpenedValves : Label Set }
+let initState = { Steps = totalSteps; Score = 0; Pos = Label "AA"; OpenedValves = Set.empty }
 let neighF n = 
     let score = n.OpenedValves |> Seq.sumBy (fun l -> valves[l].Flow)
     let p = maxFlow - score
     let moves = valves[n.Pos].Tunnels |> List.map (fun l -> { Steps = n.Steps - 1; Score = n.Score + score; Pos = l; OpenedValves = n.OpenedValves }, p)
-    let openValve = { Steps = n.Steps - 1; Score = n.Score + score; Pos = n.Pos; OpenedValves = n.Pos :: n.OpenedValves }, p
-    openValve :: moves
+    let openValve = { Steps = n.Steps - 1; Score = n.Score + score; Pos = n.Pos; OpenedValves = Set.add n.Pos n.OpenedValves }, p
+    if Set.contains n.Pos n.OpenedValves then moves else openValve :: moves
 
 let res = dijsktra [initState, 0] neighF (fun n -> n.Steps = 0)
 
