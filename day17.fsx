@@ -21,11 +21,7 @@ let blocks =
 let blocksMod i = i % blocks.Length
 let blocksInfinite i = blocks[i % blocks.Length]
 
-let fromTo a b =
-    if a = b then [ a ] else [ a .. (sign (b - a)) .. b ]
-
 let posPlus (a, b) (c, d) = a + c, b + d
-let posMinus (a, b) (c, d) = a - c, b - d
 
 let moveBlock dir block = block |> Set.map (posPlus dir)
 
