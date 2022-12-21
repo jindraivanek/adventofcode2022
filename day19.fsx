@@ -1,4 +1,6 @@
 #r "nuget: Flips"
+#r "/home/ikarni/.nuget/packages/flips/2.4.9/lib/netstandard2.0/Flips.dll"
+#I "/home/ikarni/.nuget/packages/google.ortools.runtime.linux-x64/9.0.9048/runtimes/linux-x64/native"
 
 open Flips
 open Flips.Types
@@ -30,12 +32,13 @@ type Robot =
 
 let readBlueprint (s: string) =
     match s with
-    | Match "Each ore robot costs (.*) ore. Each clay robot costs (.*) ore. Each obsidian robot costs (.*) ore and (.*) clay. Each geode robot costs (.*) ore and (.*) obsidian." [ oo
-                                                                                                                                                                                    co
-                                                                                                                                                                                    bo
-                                                                                                                                                                                    bc
-                                                                                                                                                                                    go
-                                                                                                                                                                                    gb ] ->
+    | Match "Each ore robot costs (.*) ore. Each clay robot costs (.*) ore. Each obsidian robot costs (.*) ore and (.*) clay. Each geode robot costs (.*) ore and (.*) obsidian." 
+      [ oo
+        co
+        bo
+        bc
+        go
+        gb ] ->
         [ OreRobot, [ Ore, int oo ]
           ClayRobot, [ Ore, int co ]
           ObsidianRobot, [ Ore, int bo; Clay, int bc ]
